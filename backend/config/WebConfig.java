@@ -24,6 +24,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // enables @PreAuthorize, used in Phase 7
+
+
+
+@Configuration
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+public class WebConfig {}
 public class SecurityConfig {
 
     private final JwtService jwtService;

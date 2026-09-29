@@ -31,6 +31,15 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    public class ConflictException extends RuntimeException {
+    public ConflictException(String message) { super(message); }
+}
+
+public class BadRequestException extends RuntimeException {
+    public BadRequestException(String message) { super(message); }
+}
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**

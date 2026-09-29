@@ -31,4 +31,7 @@ public abstract class BaseEntity {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+    public Long getId() {
+    return id;
+}
 }
