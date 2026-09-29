@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Makes sure the three roles exist at startup. Safe to run repeatedly (only inserts missing ones).
- * Order 1 so it runs before AdminSeeder (Order 2).
+ * Order 1: must run before AdminSeeder (Order 2), which needs the ADMIN role.
  */
 @Component
 @Order(1)
