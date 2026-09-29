@@ -1,5 +1,6 @@
 package com.edunexus.backend.exception;
 
+import org.springframework.security.access.AccessDeniedException;
 import com.edunexus.backend.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -24,12 +25,22 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Converts every exception into the standard ApiError JSON.
- * Internal details (stack traces, SQL, class names) are logged, never sent to the client.
+ * Internal details (stack traces, SQL, class names) are logged, never sent to
+ * the client.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    /**
+     * Rethrown so Spring Security's accessDeniedHandler answers with the standard
+     * 403 JSON, not the catch-all 500.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public void handleAccessDenied(AccessDeniedException ex) {
+        throw ex;
+    }
 
     // ---- Our own exceptions ----
 
@@ -51,7 +62,8 @@ public class GlobalExceptionHandler {
     // ---- Security (Phase 5-7) ----
 
     /**
-     * Wrong email/password or disabled account at login. The message is the same for every cause,
+     * Wrong email/password or disabled account at login. The message is the same
+     * for every cause,
      * so an attacker cannot learn which emails exist.
      */
     @ExceptionHandler(AuthenticationException.class)
@@ -70,7 +82,7 @@ public class GlobalExceptionHandler {
     /** @Valid on a @RequestBody failed. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleBodyValidation(MethodArgumentNotValidException ex,
-                                                         HttpServletRequest request) {
+            HttpServletRequest request) {
         List<ApiError.FieldViolation> violations = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> new ApiError.FieldViolation(error.getField(), error.getDefaultMessage()))
                 .toList();
@@ -80,7 +92,7 @@ public class GlobalExceptionHandler {
     /** Validation failed on a @PathVariable or @RequestParam. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex,
-                                                              HttpServletRequest request) {
+            HttpServletRequest request) {
         List<ApiError.FieldViolation> violations = ex.getConstraintViolations().stream()
                 .map(v -> new ApiError.FieldViolation(v.getPropertyPath().toString(), v.getMessage()))
                 .toList();
@@ -91,33 +103,33 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex,
-                                                         HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Malformed or missing request body", request, null);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
-                                                       HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Invalid value for parameter '" + ex.getName() + "'", request, null);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiError> handleMissingParameter(MissingServletRequestParameterException ex,
-                                                           HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Missing required parameter '" + ex.getParameterName() + "'",
                 request, null);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiError> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex,
-                                                             HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.METHOD_NOT_ALLOWED,
                 "Method '" + ex.getMethod() + "' is not supported for this endpoint", request, null);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiError> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex,
-                                                                HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported content type", request, null);
     }
 
@@ -129,7 +141,7 @@ public class GlobalExceptionHandler {
     /** Used by document uploads in Phase 10. */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleUploadTooLarge(MaxUploadSizeExceededException ex,
-                                                         HttpServletRequest request) {
+            HttpServletRequest request) {
         return build(HttpStatus.valueOf(413), "Uploaded file is too large", request, null);
     }
 
@@ -142,7 +154,7 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest request,
-                                           List<ApiError.FieldViolation> violations) {
+            List<ApiError.FieldViolation> violations) {
         ApiError body = new ApiError(
                 Instant.now(),
                 status.value(),

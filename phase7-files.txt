@@ -1,0 +1,847 @@
+﻿
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\pom.xml =====
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.edunexus</groupId>
+    <artifactId>backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>edunexus-backend</name>
+    <description>EduNexus college academic records platform - backend API</description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <!-- REST APIs (Spring MVC + embedded Tomcat) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- Database access: Spring Data JPA + Hibernate -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC driver (version managed by Spring Boot) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Bean Validation (@NotBlank, @Email, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Spring Security (authentication + authorization) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- JWT creation and validation (JJWT 0.12.x) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Health/info endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Auto-restart on code changes during development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\config\SecurityConfig.java =====
+package com.edunexus.backend.config;
+
+import com.edunexus.backend.security.CustomUserDetailsService;
+import com.edunexus.backend.security.JsonErrorWriter;
+import com.edunexus.backend.security.JwtAuthenticationFilter;
+import com.edunexus.backend.security.JwtService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity // enables @PreAuthorize, used in Phase 7
+public class SecurityConfig {
+
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable) // safe: no cookies or sessions, the token is in a header
+            .cors(Customizer.withDefaults())       // uses your CorsConfig from Phase 3
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                // Health checks stay public. If your HealthController uses another path, change it here.
+                .requestMatchers("/api/health", "/actuator/health", "/actuator/health/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((req, res, e) -> JsonErrorWriter.write(req, res,
+                        HttpStatus.UNAUTHORIZED, "Authentication required, or the token is invalid or expired"))
+                .accessDeniedHandler((req, res, e) -> JsonErrorWriter.write(req, res,
+                        HttpStatus.FORBIDDEN, "You do not have permission to access this resource"))
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
+                             UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\security\JwtAuthenticationFilter.java =====
+package com.edunexus.backend.security;
+
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Runs once per request. If a valid Bearer token is present, marks the request as authenticated.
+ * Otherwise it does nothing, and Spring Security rejects protected requests with 401.
+ * Not a @Component on purpose: SecurityConfig creates it, so it is registered only once.
+ */
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
+
+    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+
+        String header = request.getHeader("Authorization");
+
+        if (header != null && header.startsWith("Bearer ")
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            String token = header.substring(7);
+            try {
+                String email = jwtService.extractUsername(token);
+                // Loaded from the DB on every request, so disabling a user takes effect immediately.
+                CustomUserDetails user = userDetailsService.loadUserByUsername(email);
+                if (user.isEnabled()) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (JwtException | IllegalArgumentException | UsernameNotFoundException ex) {
+                SecurityContextHolder.clearContext(); // invalid token: treated as anonymous
+            }
+        }
+
+        chain.doFilter(request, response);
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\security\CustomUserDetails.java =====
+package com.edunexus.backend.security;
+
+import java.util.Collection;
+import java.util.List;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+/**
+ * The logged-in user as Spring Security sees it. The role becomes an authority such as ROLE_STUDENT,
+ * which is what hasRole("STUDENT") / @PreAuthorize checks in Phase 7.
+ */
+public class CustomUserDetails implements UserDetails {
+
+    private final Long id;
+    private final String email;
+    private final String passwordHash;
+    private final String role;
+    private final boolean enabled;
+
+    public CustomUserDetails(Long id, String email, String passwordHash, String role, boolean enabled) {
+        this.id = id;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.enabled = enabled;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\security\JsonErrorWriter.java =====
+package com.edunexus.backend.security;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Instant;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
+public final class JsonErrorWriter {
+
+    private JsonErrorWriter() {
+    }
+
+    public static void write(HttpServletRequest request, HttpServletResponse response,
+                             HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format(
+                "{\"timestamp\":\"%s\",\"status\":%d,\"error\":\"%s\",\"message\":\"%s\",\"path\":\"%s\"}",
+                Instant.now(), status.value(), status.getReasonPhrase(),
+                escape(message), escape(request.getRequestURI())));
+    }
+
+    private static String escape(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\User.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** A login account. The table is called "users" because "user" is reserved in PostgreSQL. */
+@Entity
+@Table(name = "users")
+public class User extends BaseEntity {
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    /** BCrypt hash only; a plain-text password is never stored. */
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    protected User() {
+    }
+
+    public User(String email, String passwordHash, Role role) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\Role.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "roles")
+public class Role extends BaseEntity {
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true, length = 20)
+    private RoleName name;
+
+    protected Role() {
+    }
+
+    public Role(RoleName name) {
+        this.name = name;
+    }
+
+    public RoleName getName() {
+        return name;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\RoleName.java =====
+package com.edunexus.backend.entity;
+
+/** The three roles used for role-based access control (RBAC). */
+public enum RoleName {
+    STUDENT,
+    HOD,
+    ADMIN
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\StudentProfile.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+/**
+ * Student details. Email lives on User; department comes from the course;
+ * year is derived from currentSemester ((semester + 1) / 2), so none of them are stored twice.
+ */
+@Entity
+@Table(name = "student_profiles")
+public class StudentProfile extends BaseEntity {
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    /** The college-issued student ID (roll number), e.g. "21CS001". Not the database primary key. */
+    @Column(name = "student_id", nullable = false, unique = true, length = 30)
+    private String studentId;
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;
+
+    @Column(length = 20)
+    private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @Column(name = "current_semester", nullable = false)
+    private int currentSemester;
+
+    protected StudentProfile() {
+    }
+
+    public StudentProfile(User user, String studentId, String fullName, Course course, int currentSemester) {
+        this.user = user;
+        this.studentId = studentId;
+        this.fullName = fullName;
+        this.course = course;
+        this.currentSemester = currentSemester;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public String getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public int getCurrentSemester() {
+        return currentSemester;
+    }
+
+    public void setCurrentSemester(int currentSemester) {
+        this.currentSemester = currentSemester;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\StaffProfile.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+/**
+ * Profile for HOD and ADMIN users. A HOD belongs to one department (checked in the service layer);
+ * an ADMIN has no department.
+ */
+@Entity
+@Table(name = "staff_profiles")
+public class StaffProfile extends BaseEntity {
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;
+
+    @Column(length = 20)
+    private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    protected StaffProfile() {
+    }
+
+    public StaffProfile(User user, String fullName, Department department) {
+        this.user = user;
+        this.fullName = fullName;
+        this.department = department;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\Course.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "courses")
+public class Course extends BaseEntity {
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String code;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
+
+    @Column(name = "total_semesters", nullable = false)
+    private int totalSemesters;
+
+    protected Course() {
+    }
+
+    public Course(String code, String name, Department department, int totalSemesters) {
+        this.code = code;
+        this.name = name;
+        this.department = department;
+        this.totalSemesters = totalSemesters;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public int getTotalSemesters() {
+        return totalSemesters;
+    }
+
+    public void setTotalSemesters(int totalSemesters) {
+        this.totalSemesters = totalSemesters;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\entity\Department.java =====
+package com.edunexus.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "departments")
+public class Department extends BaseEntity {
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String code;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String name;
+
+    protected Department() {
+    }
+
+    public Department(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\repository\StudentProfileRepository.java =====
+package com.edunexus.backend.repository;
+
+import com.edunexus.backend.entity.StudentProfile;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface StudentProfileRepository extends JpaRepository<StudentProfile, Long> {
+
+    Optional<StudentProfile> findByUserId(Long userId);
+
+    Optional<StudentProfile> findByStudentId(String studentId);
+
+    boolean existsByStudentId(String studentId);
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\repository\StaffProfileRepository.java =====
+package com.edunexus.backend.repository;
+
+import com.edunexus.backend.entity.StaffProfile;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface StaffProfileRepository extends JpaRepository<StaffProfile, Long> {
+
+    Optional<StaffProfile> findByUserId(Long userId);
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\main\java\com\edunexus\backend\repository\UserRepository.java =====
+package com.edunexus.backend.repository;
+
+import com.edunexus.backend.entity.User;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+}
+
+===== C:\Users\hr_apparnafabtech\edunexuss\backend\src\test\java\com\edunexus\backend\exception\GlobalExceptionHandlerTest.java =====
+package com.edunexus.backend.exception;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Tests the exception handler in isolation, with no database or full app startup. */
+class GlobalExceptionHandlerTest {
+
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(new TestController())
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
+
+    @Test
+    void notFoundReturns404WithStandardBody() throws Exception {
+        mockMvc.perform(get("/test/not-found"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Student 42 not found"))
+                .andExpect(jsonPath("$.path").value("/test/not-found"));
+    }
+
+    @Test
+    void validationFailureReturns400WithFieldErrors() throws Exception {
+        mockMvc.perform(post("/test/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("name"));
+    }
+
+    @Test
+    void unexpectedErrorReturns500WithoutLeakingDetails() throws Exception {
+        mockMvc.perform(get("/test/boom"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred"))
+                .andExpect(content().string(not(containsString("hunter2"))));
+    }
+
+    // ---- Minimal controller used only by this test ----
+
+    @RestController
+    static class TestController {
+
+        @GetMapping("/test/not-found")
+        String notFound() {
+            throw new ResourceNotFoundException("Student 42 not found");
+        }
+
+        @PostMapping("/test/validate")
+        String validate(@Valid @RequestBody Payload payload) {
+            return "ok";
+        }
+
+        @GetMapping("/test/boom")
+        String boom() {
+            throw new IllegalStateException("database password is hunter2");
+        }
+    }
+
+    record Payload(@NotBlank String name) {
+    }
+}
