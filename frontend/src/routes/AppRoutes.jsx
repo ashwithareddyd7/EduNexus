@@ -1,9 +1,10 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+﻿import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
+import ProfilePage from "@/pages/ProfilePage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
@@ -19,7 +20,7 @@ export default function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
 
           <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
-            <Route path="/profile" element={<PlaceholderPage title="My Profile" />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/academics" element={<PlaceholderPage title="Academic Records" />} />
             <Route path="/documents" element={<PlaceholderPage title="My Documents" />} />
           </Route>

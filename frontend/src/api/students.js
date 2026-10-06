@@ -1,6 +1,5 @@
 ﻿import apiClient from "@/api/client";
 
-// Items inside GpaResponse.semesters. Adjust here if the field names differ.
 // Matches the backend record SemesterGpa(int semester, int credits, BigDecimal sgpa).
 function normalizeSemester(item) {
   return {
@@ -9,6 +8,7 @@ function normalizeSemester(item) {
     sgpa: item.sgpa,
   };
 }
+
 // Returns null when the student has not created a profile yet (404).
 export async function getMyProfile() {
   try {
@@ -18,6 +18,29 @@ export async function getMyProfile() {
     if (error.response?.status === 404) return null;
     throw error;
   }
+}
+
+export async function createMyProfile({
+  studentId,
+  fullName,
+  phone,
+  courseId,
+  currentSemester,
+}) {
+  const { data } = await apiClient.post("/api/students/me", {
+    studentId,
+    fullName,
+    phone,
+    courseId,
+    currentSemester,
+  });
+  return data;
+}
+
+// The backend only lets a student change their name and phone.
+export async function updateMyProfile({ fullName, phone }) {
+  const { data } = await apiClient.put("/api/students/me", { fullName, phone });
+  return data;
 }
 
 export async function getGpa(studentId) {
