@@ -28,3 +28,13 @@ export async function loginRequest({ email, password }) {
     },
   };
 }
+
+// Students only. If your backend uses different field names, change them here.
+export async function registerRequest({ fullName, email, password }) {
+  const { data } = await apiClient.post("/api/auth/register", {
+    fullName,
+    email,
+    password,
+  });
+  return data;
+}

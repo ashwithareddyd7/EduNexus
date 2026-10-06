@@ -1,29 +1,34 @@
+﻿import { Link } from "react-router-dom";
 import useAuth from "@/context/useAuth";
+import { ROLE_LABELS, navItemsForRole } from "@/config/navigation";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const shortcuts = navItemsForRole(user.role).filter(
+    (item) => item.to !== "/dashboard"
+  );
 
   return (
-    <main className="flex min-h-full items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Welcome, {user.name}
-        </h1>
-        <p className="mt-1 text-slate-600">{user.email}</p>
-        <span className="mt-4 inline-block rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700">
-          {user.role}
-        </span>
-        <p className="mt-6 text-sm text-slate-500">
-          Role-specific dashboards are built in later phases.
-        </p>
-        <button
-          type="button"
-          onClick={logout}
-          className="mt-6 w-full rounded-lg border border-slate-300 px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-100"
-        >
-          Log out
-        </button>
+    <div>
+      <h1 className="text-2xl font-bold text-slate-900">
+        Welcome, {user.name}
+      </h1>
+      <p className="mt-1 text-slate-600">
+        {ROLE_LABELS[user.role] ?? user.role} · {user.email}
+      </p>
+
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {shortcuts.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className="rounded-2xl bg-white p-6 shadow transition hover:shadow-md"
+          >
+            <p className="font-semibold text-slate-900">{item.label}</p>
+            <p className="mt-1 text-sm text-indigo-600">Open →</p>
+          </Link>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }

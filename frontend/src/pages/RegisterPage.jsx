@@ -1,29 +1,38 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import useAuth from "@/context/useAuth";
+import { registerRequest } from "@/api/auth";
 import { getErrorMessage } from "@/api/client";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
 
-export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
-  const location = useLocation();
+const MIN_PASSWORD_LENGTH = 8;
 
-  // Set by the register page after a successful sign-up.
-  const registeredEmail = location.state?.registeredEmail;
+function validate(form) {
+  if (!form.fullName.trim()) return "Please enter your full name.";
+  if (form.password.length < MIN_PASSWORD_LENGTH) {
+    return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+  }
+  if (form.password !== form.confirmPassword) return "Passwords do not match.";
+  return "";
+}
+
+export default function RegisterPage() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: registeredEmail ?? "",
+    fullName: "",
+    email: "",
     password: "",
+    confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const redirectTo = location.state?.from?.pathname ?? "/dashboard";
-
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleChange = (event) => {
@@ -33,10 +42,23 @@ export default function LoginPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const validationMessage = validate(form);
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
+
     setError("");
     setSubmitting(true);
     try {
-      await login({ email: form.email.trim(), password: form.password });
+      const email = form.email.trim();
+      await registerRequest({
+        fullName: form.fullName.trim(),
+        email,
+        password: form.password,
+      });
+      navigate("/login", { replace: true, state: { registeredEmail: email } });
     } catch (err) {
       setError(getErrorMessage(err));
       setSubmitting(false);
@@ -47,15 +69,7 @@ export default function LoginPage() {
     <main className="flex min-h-full items-center justify-center bg-slate-50 p-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-slate-900">EduNexus</h1>
-        <p className="mt-1 text-slate-600">Sign in to your account</p>
-
-        {registeredEmail && !error && (
-          <div className="mt-6">
-            <Alert tone="success">
-              Account created. Please sign in.
-            </Alert>
-          </div>
-        )}
+        <p className="mt-1 text-slate-600">Create your student account</p>
 
         {error && (
           <div className="mt-6">
@@ -64,6 +78,15 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <TextField
+            id="fullName"
+            label="Full name"
+            type="text"
+            autoComplete="name"
+            required
+            value={form.fullName}
+            onChange={handleChange}
+          />
           <TextField
             id="email"
             label="Email"
@@ -77,20 +100,29 @@ export default function LoginPage() {
             id="password"
             label="Password"
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             required
             value={form.password}
             onChange={handleChange}
           />
+          <TextField
+            id="confirmPassword"
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            required
+            value={form.confirmPassword}
+            onChange={handleChange}
+          />
           <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? "Signing in..." : "Sign in"}
+            {submitting ? "Creating account..." : "Create account"}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">
-          New student?{" "}
-          <Link to="/register" className="font-medium text-indigo-600 hover:underline">
-            Create an account
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-indigo-600 hover:underline">
+            Sign in
           </Link>
         </p>
       </div>
