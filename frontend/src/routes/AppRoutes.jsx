@@ -8,7 +8,9 @@ import ProfilePage from "@/pages/ProfilePage";
 import AcademicRecordsPage from "@/pages/AcademicRecordsPage";
 import DocumentsPage from "@/pages/DocumentsPage";
 import StaffDocumentsPage from "@/pages/StaffDocumentsPage";
+import SubjectsPage from "@/pages/SubjectsPage";
 import StudentListPage from "@/pages/students/StudentListPage";
+import StudentDetailPage from "@/pages/students/StudentDetailPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function AppRoutes() {
@@ -30,6 +32,8 @@ export default function AppRoutes() {
 
           <Route element={<ProtectedRoute allowedRoles={["HOD", "ADMIN"]} />}>
             <Route path="/students" element={<StudentListPage title="Students" />} />
+            <Route path="/students/:id" element={<StudentDetailPage />} />
+            <Route path="/subjects" element={<SubjectsPage />} />
             <Route path="/staff/documents" element={<StaffDocumentsPage />} />
           </Route>
 

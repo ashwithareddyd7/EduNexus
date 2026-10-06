@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import useAuth from "@/context/useAuth";
 import useAsyncData from "@/hooks/useAsyncData";
 import { listStudents, setStudentStatus } from "@/api/studentAdmin";
@@ -103,7 +104,7 @@ export default function StudentListPage({ title, manageStatus = false }) {
                     <tr key={s.id}>
                       <td className="py-2 pr-4 text-slate-600">{s.studentId}</td>
                       <td className="py-2 pr-4">
-                        <p className="font-medium text-slate-900">{s.fullName}</p>
+                        <Link to={`/students/${s.id}`} className="font-medium text-indigo-600 hover:underline">{s.fullName}</Link>
                         <p className="text-xs text-slate-500">{s.email}</p>
                       </td>
                       <td className="py-2 pr-4">
