@@ -46,6 +46,8 @@ public class SecurityConfig {
                 // Health checks stay public. If your HealthController uses another path, change it here.
                 .requestMatchers("/api/health", "/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/records").hasAnyRole("HOD", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/subjects").hasAnyRole("HOD", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/hod/**").hasAnyRole("HOD", "ADMIN")
                 .anyRequest().authenticated()
