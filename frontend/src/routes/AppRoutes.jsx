@@ -6,6 +6,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AcademicRecordsPage from "@/pages/AcademicRecordsPage";
+import DocumentsPage from "@/pages/DocumentsPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
@@ -23,7 +24,7 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/academics" element={<AcademicRecordsPage />} />
-            <Route path="/documents" element={<PlaceholderPage title="My Documents" />} />
+            <Route path="/documents" element={<DocumentsPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={["HOD", "ADMIN"]} />}>
@@ -42,4 +43,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-
