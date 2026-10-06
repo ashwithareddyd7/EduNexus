@@ -8,7 +8,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import AcademicRecordsPage from "@/pages/AcademicRecordsPage";
 import DocumentsPage from "@/pages/DocumentsPage";
 import StaffDocumentsPage from "@/pages/StaffDocumentsPage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
+import StudentListPage from "@/pages/students/StudentListPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 export default function AppRoutes() {
@@ -29,12 +29,15 @@ export default function AppRoutes() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={["HOD", "ADMIN"]} />}>
-            <Route path="/students" element={<PlaceholderPage title="Students" />} />
+            <Route path="/students" element={<StudentListPage title="Students" />} />
             <Route path="/staff/documents" element={<StaffDocumentsPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-            <Route path="/admin/accounts" element={<PlaceholderPage title="Account Status" />} />
+            <Route
+              path="/admin/accounts"
+              element={<StudentListPage title="Account Status" manageStatus />}
+            />
           </Route>
         </Route>
       </Route>

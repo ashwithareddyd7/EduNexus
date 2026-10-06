@@ -5,6 +5,8 @@ import { getErrorMessage } from "@/api/client";
 export default function useAsyncData(fetcher, deps) {
   const [state, setState] = useState({ data: null, loading: true, error: "" });
 
+  // deps is supplied by the caller, so the linter can't check it here.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let cancelled = false;
     setState((s) => ({ ...s, loading: true, error: "" }));
