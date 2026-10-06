@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { Link } from "react-router-dom";
 import { getErrorMessage } from "@/api/client";
 import { getGpa, getMyProfile } from "@/api/students";
@@ -130,7 +131,7 @@ export default function AcademicRecordsPage() {
   }, []);
 
   if (state.status === "loading") {
-    return <p className="text-slate-500">Loading your results...</p>;
+    return <Spinner label="Loading your results..." />;
   }
 
   if (state.status === "error") {

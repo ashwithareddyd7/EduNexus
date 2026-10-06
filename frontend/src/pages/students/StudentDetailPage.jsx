@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { Link, useParams } from "react-router-dom";
 import useAsyncData from "@/hooks/useAsyncData";
 import { getErrorMessage } from "@/api/client";
@@ -52,7 +53,7 @@ export default function StudentDetailPage() {
     );
   }
   if (profile.loading || !profile.data) {
-    return <p className="text-sm text-slate-500">Loading student...</p>;
+    return <Spinner label="Loading student..." />;
   }
 
   const p = profile.data;

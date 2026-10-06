@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { Link } from "react-router-dom";
 import useAuth from "@/context/useAuth";
 import useAsyncData from "@/hooks/useAsyncData";
@@ -79,7 +80,7 @@ export default function StudentListPage({ title, manageStatus = false }) {
 
       <div className="rounded-2xl bg-white p-6 shadow">
         {students.loading ? (
-          <p className="text-sm text-slate-500">Loading students...</p>
+          <Spinner label="Loading students..." />
         ) : rows.length === 0 ? (
           <p className="text-sm text-slate-500">No students found.</p>
         ) : (

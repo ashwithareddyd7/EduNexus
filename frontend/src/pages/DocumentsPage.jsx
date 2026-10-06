@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { Link } from "react-router-dom";
 import { fetchMyDocuments } from "@/api/documents";
 import { getErrorMessage } from "@/api/client";
@@ -57,7 +58,7 @@ export default function DocumentsPage() {
         </p>
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Loading documents...</p>}
+      {loading && <Spinner label="Loading documents..." />}
 
       {needsProfile && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">

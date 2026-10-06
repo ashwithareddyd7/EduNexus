@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { getMyProfile } from "@/api/students";
 import { getErrorMessage } from "@/api/client";
 import Alert from "@/components/ui/Alert";
@@ -52,7 +53,7 @@ export default function ProfilePage() {
   }
 
   if (state.status === "loading") {
-    return <p className="text-slate-500">Loading your profile...</p>;
+    return <Spinner label="Loading your profile..." />;
   }
 
   if (state.status === "error") {

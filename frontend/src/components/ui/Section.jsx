@@ -1,3 +1,5 @@
+import Spinner from "@/components/ui/Spinner";
+
 // A white card with a title that shows its own loading and error state.
 export default function Section({ title, subtitle, loading, error, children }) {
   return (
@@ -10,7 +12,7 @@ export default function Section({ title, subtitle, loading, error, children }) {
             {error}
           </p>
         ) : loading ? (
-          <p className="text-sm text-slate-500">Loading...</p>
+          <Spinner />
         ) : (
           children
         )}

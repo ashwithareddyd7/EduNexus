@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
 
 export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, sessionExpired } = useAuth();
   const location = useLocation();
 
   // Set by the register page after a successful sign-up.
@@ -49,7 +49,13 @@ export default function LoginPage() {
         <h1 className="text-3xl font-bold text-slate-900">EduNexus</h1>
         <p className="mt-1 text-slate-600">Sign in to your account</p>
 
-        {registeredEmail && !error && (
+        {sessionExpired && !error && (
+          <div className="mt-6">
+            <Alert>Your session has expired. Please sign in again.</Alert>
+          </div>
+        )}
+
+        {registeredEmail && !error && !sessionExpired && (
           <div className="mt-6">
             <Alert tone="success">
               Account created. Please sign in.

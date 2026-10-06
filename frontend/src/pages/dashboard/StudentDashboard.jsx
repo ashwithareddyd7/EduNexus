@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import { Link } from "react-router-dom";
 import { getErrorMessage } from "@/api/client";
 import { getGpa, getMyDocuments, getMyProfile } from "@/api/students";
@@ -57,7 +58,7 @@ export default function StudentDashboard() {
   }, []);
 
   if (state.status === "loading") {
-    return <p className="text-slate-500">Loading your dashboard...</p>;
+    return <Spinner label="Loading your dashboard..." />;
   }
 
   if (state.status === "error") {

@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import useAuth from "@/context/useAuth";
 import useAsyncData from "@/hooks/useAsyncData";
 import { fetchStaffDocuments } from "@/api/staffDocuments";
@@ -129,7 +130,7 @@ export default function StaffDocumentsPage() {
 
       <div className="rounded-2xl bg-white p-6 shadow">
         {docs.loading ? (
-          <p className="text-sm text-slate-500">Loading documents...</p>
+          <Spinner label="Loading documents..." />
         ) : rows.length === 0 ? (
           <p className="text-sm text-slate-500">No documents found.</p>
         ) : (
