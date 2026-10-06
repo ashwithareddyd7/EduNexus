@@ -25,3 +25,5 @@ uploads/
 .vscode/
 .DS_Store
 Thumbs.db
+phase*-context.txt
+phase*.ps1
