@@ -103,7 +103,7 @@ public class StudentProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
     }
 
-    private void assertCanView(CustomUserDetails me, StudentProfile p) {
+    public void assertCanView(CustomUserDetails me, StudentProfile p) {
         boolean allowed = switch (me.getRole()) {
             case "ADMIN" -> true;
             case "HOD" -> hodDepartmentId(me).equals(p.getCourse().getDepartment().getId());
@@ -138,4 +138,12 @@ public class StudentProfileService {
                 p.getCurrentSemester(),
                 (p.getCurrentSemester() + 1) / 2);
     }
-}
+
+    public void assertCanManage(CustomUserDetails me, Long departmentId) {
+        boolean allowed = switch (me.getRole()) {
+            case "ADMIN" -> true;
+            case "HOD" -> hodDepartmentId(me).equals(departmentId);
+            default -> false;
+        };
+        if (!allowed) throw new AccessDeniedException("Not allowed");
+    }}
