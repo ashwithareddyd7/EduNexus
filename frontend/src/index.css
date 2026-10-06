@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Brand colours, fonts and other design tokens from the Figma file
+   go in an @theme block here in Phase 13. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
