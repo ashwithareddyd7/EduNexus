@@ -7,7 +7,7 @@ export default function Pagination({
   onChange,
 }) {
   return (
-    <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
       <span>
         {totalElements} {noun}
         {totalElements === 1 ? "" : "s"}

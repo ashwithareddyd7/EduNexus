@@ -83,7 +83,7 @@ export default function StudentDetailPage() {
     <div className="space-y-6">
       <BackLink />
 
-      <div className="rounded-2xl bg-white p-6 shadow">
+      <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900">{p.fullName}</h1>
           {p.enabled === false ? (

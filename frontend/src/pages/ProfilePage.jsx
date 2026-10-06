@@ -76,7 +76,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl bg-white p-6 shadow">
+      <div className="mt-6 rounded-2xl bg-white p-4 shadow sm:p-6">
         {editing ? (
           <EditProfileForm
             profile={profile}

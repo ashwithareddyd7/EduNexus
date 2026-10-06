@@ -3,7 +3,7 @@ import Spinner from "@/components/ui/Spinner";
 // A white card with a title that shows its own loading and error state.
 export default function Section({ title, subtitle, loading, error, children }) {
   return (
-    <section className="rounded-2xl bg-white p-6 shadow">
+    <section className="rounded-2xl bg-white p-4 shadow sm:p-6">
       <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
       {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       <div className="mt-4">

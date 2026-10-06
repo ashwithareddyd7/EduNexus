@@ -76,7 +76,7 @@ export default function DocumentList({ documents, onDeleted, onError }) {
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               {confirmId === doc.id ? (
                 <>
                   <span className="text-sm text-slate-600">Delete this file?</span>

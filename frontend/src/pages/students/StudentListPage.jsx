@@ -78,7 +78,7 @@ export default function StudentListPage({ title, manageStatus = false }) {
         <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{notice}</p>
       )}
 
-      <div className="rounded-2xl bg-white p-6 shadow">
+      <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
         {students.loading ? (
           <Spinner label="Loading students..." />
         ) : rows.length === 0 ? (
@@ -123,7 +123,7 @@ export default function StudentListPage({ title, manageStatus = false }) {
                       </td>
                       {manageStatus && (
                         <td className="py-2">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex flex-wrap items-center justify-end gap-2">
                             {confirmId === s.id ? (
                               <>
                                 <span className="text-slate-600">Disable this account?</span>

@@ -67,7 +67,7 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-full items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg sm:p-8">
         <h1 className="text-3xl font-bold text-slate-900">EduNexus</h1>
         <p className="mt-1 text-slate-600">Create your student account</p>
 

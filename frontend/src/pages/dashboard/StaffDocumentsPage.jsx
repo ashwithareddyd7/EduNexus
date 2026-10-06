@@ -11,7 +11,7 @@ import saveBlob from "@/utils/saveBlob";
 const PAGE_SIZE = 10;
 
 const selectClass =
-  "mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm " +
+  "mt-1 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm " +
   "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
 
 export default function StaffDocumentsPage() {
@@ -127,7 +127,7 @@ export default function StaffDocumentsPage() {
         </p>
       )}
 
-      <div className="rounded-2xl bg-white p-6 shadow">
+      <div className="rounded-2xl bg-white p-4 shadow sm:p-6">
         {docs.loading ? (
           <p className="text-sm text-slate-500">Loading documents...</p>
         ) : rows.length === 0 ? (
@@ -164,7 +164,7 @@ export default function StaffDocumentsPage() {
                       </td>
                       <td className="py-2 pr-4 text-slate-600">{formatFileSize(d.sizeBytes)}</td>
                       <td className="py-2">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
                           {confirmId === d.id ? (
                             <>
                               <button

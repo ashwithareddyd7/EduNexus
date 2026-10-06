@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCourses } from "@/api/courses";
 import { createMyProfile } from "@/api/students";
 import { getErrorMessage } from "@/api/client";
@@ -91,7 +91,7 @@ export default function CreateProfileForm({ onCreated }) {
   };
 
   return (
-    <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 shadow">
+    <div className="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow sm:p-8">
       <h1 className="text-2xl font-bold text-slate-900">Create your profile</h1>
       <p className="mt-1 text-slate-600">
         Add your details once. Your results and documents are linked to this

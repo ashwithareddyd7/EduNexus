@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import useAuth from "@/context/useAuth";
 import useAsyncData from "@/hooks/useAsyncData";
 import { ROLE_LABELS } from "@/config/navigation";
@@ -18,7 +18,7 @@ import DepartmentsTable from "@/pages/dashboard/staff/DepartmentsTable";
 import { formatNumber } from "@/utils/format";
 
 const selectClass =
-  "mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm " +
+  "mt-1 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm " +
   "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
 
 function Filter({ label, value, onChange, children }) {
