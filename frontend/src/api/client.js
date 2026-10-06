@@ -37,7 +37,7 @@ export function getErrorMessage(error) {
   if (error.response?.data?.message) return error.response.data.message;
   if (error.code === "ECONNABORTED") return "The request timed out.";
   if (error.request && !error.response) return "Cannot reach the server.";
-  return "Something went wrong.";
+      return error.message || "Something went wrong.";
 }
 
 export default apiClient;
