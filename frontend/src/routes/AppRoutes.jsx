@@ -7,6 +7,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AcademicRecordsPage from "@/pages/AcademicRecordsPage";
 import DocumentsPage from "@/pages/DocumentsPage";
+import StaffDocumentsPage from "@/pages/StaffDocumentsPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
@@ -29,7 +30,7 @@ export default function AppRoutes() {
 
           <Route element={<ProtectedRoute allowedRoles={["HOD", "ADMIN"]} />}>
             <Route path="/students" element={<PlaceholderPage title="Students" />} />
-            <Route path="/staff/documents" element={<PlaceholderPage title="Staff Documents" />} />
+            <Route path="/staff/documents" element={<StaffDocumentsPage />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
