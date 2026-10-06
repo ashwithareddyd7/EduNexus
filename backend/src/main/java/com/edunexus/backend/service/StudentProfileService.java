@@ -136,7 +136,8 @@ public class StudentProfileService {
                 c.getName(),
                 c.getDepartment().getName(),
                 p.getCurrentSemester(),
-                (p.getCurrentSemester() + 1) / 2);
+                (p.getCurrentSemester() + 1) / 2,
+                p.getUser().isEnabled());
     }
 
     public void assertCanManage(CustomUserDetails me, Long departmentId) {

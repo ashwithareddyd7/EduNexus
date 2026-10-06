@@ -10,4 +10,5 @@ public record StudentProfileResponse(
         String courseName,
         String departmentName,
         int currentSemester,
-        int year) {}
+        int year,
+        boolean enabled) {}
